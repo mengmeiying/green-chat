@@ -1,0 +1,54 @@
+.message-input {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding-block: 8px 16px;
+  padding-inline: max(20px, calc((100% - 760px) / 2));
+
+  &__field {
+    min-width: 0;
+    height: 48px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 12px;
+    background: var(--color-bg);
+    box-shadow: var(--shadow-bubble);
+    outline: none;
+
+    &::placeholder {
+      color: var(--color-text-secondary);
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 2px var(--color-accent);
+    }
+  }
+
+  &__button {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: #ffffff;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: var(--shadow-bubble);
+    transition: background-color 0.2s, transform 0.1s;
+
+    &:hover {
+      background: var(--color-accent-hover);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #ffffff;
+      outline-offset: 2px;
+    }
+  }
+}

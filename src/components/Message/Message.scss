@@ -1,0 +1,60 @@
+.message {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  column-gap: 8px;
+  max-width: min(75%, 480px);
+  padding: 6px 10px;
+  border-radius: var(--radius-bubble);
+  box-shadow: var(--shadow-bubble);
+  line-height: 1.35;
+
+  &__text {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  &__time {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    transform: translateY(2px);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 9px;
+    height: 14px;
+    background: inherit;
+  }
+
+  &--in {
+    justify-self: start;
+    background: var(--color-bubble-in);
+    border-bottom-left-radius: 0;
+
+    &::after {
+      left: -8px;
+      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    }
+  }
+
+  &--out {
+    justify-self: end;
+    background: var(--color-bubble-out);
+    border-bottom-right-radius: 0;
+
+    &::after {
+      right: -8px;
+      clip-path: polygon(0 0, 100% 100%, 0 100%);
+    }
+
+    .message__time {
+      color: var(--color-time-out);
+    }
+  }
+}
