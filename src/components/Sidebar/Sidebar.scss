@@ -59,6 +59,11 @@
   }
 
   &__item {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: inherit;
+    text-align: left;
     display: grid;
     align-items: center;
     min-height: 56px;
@@ -66,6 +71,14 @@
     border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.15s;
+
+    &__empty {
+    align-self: start;
+    margin: 0;
+    padding: 24px 12px;
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
 
     &:hover {
       background: var(--color-hover);

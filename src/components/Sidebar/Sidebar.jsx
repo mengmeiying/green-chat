@@ -1,29 +1,54 @@
+import { useState } from 'react';
 import './Sidebar.scss';
 
-function Sidebar({ chats, activeChatId }) {
+function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat }) {
+  const [phone, setPhone] = useState('');
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    const digits = phone.replace(/\D/g, '');
+
+    if (digits.length < 10) {
+      return;
+    }
+
+    onCreateChat(digits);
+    setPhone('');
+  }
+
   return (
     <aside className="sidebar">
-      <form className="sidebar__new-chat">
+      <form className="sidebar__new-chat" onSubmit={handleSubmit}>
         <input
           className="sidebar__input"
           type="tel"
           placeholder="Номер телефона"
+          value={phone}
+          onChange={(event) => setPhone(event.target.value)}
         />
         <button className="sidebar__button" type="submit">
           Новый чат
         </button>
       </form>
 
-      <ul className="sidebar__list">
-        {chats.map((chat) => (
-          <li
-            key={chat.chatId}
-            className={`sidebar__item ${chat.chatId === activeChatId ? 'sidebar__item--active' : ''}`}
-          >
-            +{chat.phone}
-          </li>
-        ))}
-      </ul>
+      {chats.length === 0 ? (
+        <p className="sidebar__empty">Чатов пока нет</p>
+      ) : (
+        <ul className="sidebar__list">
+          {chats.map((chat) => (
+            <li key={chat.chatId}>
+              <button
+                type="button"
+                className={`sidebar__item ${chat.chatId === activeChatId ? 'sidebar__item--active' : ''}`}
+                onClick={() => onSelectChat(chat.chatId)}
+              >
+                +{chat.phone}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </aside>
   );
 }
