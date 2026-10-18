@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './Sidebar.scss';
 
-function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat }) {
+function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat, onLogout }) {
   const [phone, setPhone] = useState('');
 
   function handleSubmit(event) {
@@ -19,6 +19,12 @@ function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat }) {
 
   return (
     <aside className="sidebar">
+        <header className="sidebar__header">
+        <h2 className="sidebar__title">Чаты</h2>
+        <button className="sidebar__logout" type="button" onClick={onLogout}>
+          Выйти
+        </button>
+      </header>
       <form className="sidebar__new-chat" onSubmit={handleSubmit}>
         <input
           className="sidebar__input"

@@ -1,9 +1,42 @@
 .sidebar {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
   min-height: 0;
   background: var(--color-bg);
   border-right: 1px solid var(--color-border);
+
+    &__header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    height: 56px;
+    padding: 0 12px 0 20px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  &__logout {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+
+    &:hover {
+      background: var(--color-hover);
+      color: var(--color-text);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+  }
 
   &__new-chat {
     display: grid;
