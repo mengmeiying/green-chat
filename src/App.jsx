@@ -33,6 +33,13 @@ function parseIncomingMessage(body) {
   }
 
   const { messageData, senderData } = body;
+  const chatId = String(senderData?.chatId ?? '');
+
+  // Групповые чаты в Telegram начинаются с минуса — их не показываем
+  if (!chatId || chatId.startsWith('-')) {
+    return null;
+  }
+
   let text = null;
 
   if (messageData?.typeMessage === 'textMessage') {
@@ -45,22 +52,12 @@ function parseIncomingMessage(body) {
     return null;
   }
 
-  const chatId = String(senderData.chatId);
-  const phone = senderData.senderPhoneNumber ? String(senderData.senderPhoneNumber) : '';
-
   return {
-    chat: {
-      chatId,
-      phone,
-      title: phone ? `+${phone}` : senderData.chatName || chatId,
-    },
-    message: {
-      id: body.idMessage,
-      chatId,
-      text,
-      direction: 'in',
-      timestamp: body.timestamp * 1000,
-    },
+    id: body.idMessage,
+    chatId,
+    text,
+    direction: 'in',
+    timestamp: body.timestamp * 1000,
   };
 }
 
@@ -95,16 +92,10 @@ function App() {
           const incoming = parseIncomingMessage(notification.body);
 
           if (incoming) {
-            setChats((prev) =>
-              prev.some((chat) => chat.chatId === incoming.chat.chatId)
-                ? prev
-                : [...prev, incoming.chat],
-            );
-
             setMessages((prev) =>
-              prev.some((msg) => msg.id === incoming.message.id)
+              prev.some((msg) => msg.id === incoming.id)
                 ? prev
-                : [...prev, incoming.message],
+                : [...prev, incoming],
             );
           }
 
