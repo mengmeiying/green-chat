@@ -24,7 +24,7 @@ function ChatWindow({ chat, messages, onSendMessage }) {
 
   return (
     <section className="chat-window">
-      <header className="chat-window__header">+{chat.phone}</header>
+      <header className="chat-window__header">{chat.title}</header>
 
       <div className="chat-window__messages" ref={messagesRef}>
         {messages.map((msg) => (

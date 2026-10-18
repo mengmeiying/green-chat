@@ -35,9 +35,10 @@ export function sendMessage(credentials, chatId, message) {
   });
 }
 
-export function receiveNotification(credentials, timeoutSeconds = 20) {
+export function receiveNotification(credentials, timeoutSeconds = 20, signal) {
   return request(
     buildUrl(credentials, 'receiveNotification', `?receiveTimeout=${timeoutSeconds}`),
+    { signal },
   );
 }
 

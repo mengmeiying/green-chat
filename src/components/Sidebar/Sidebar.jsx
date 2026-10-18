@@ -68,7 +68,7 @@ function Sidebar({
                 className={`sidebar__item ${chat.chatId === activeChatId ? 'sidebar__item--active' : ''}`}
                 onClick={() => onSelectChat(chat.chatId)}
               >
-                +{chat.phone}
+                {chat.title}
               </button>
             </li>
           ))}

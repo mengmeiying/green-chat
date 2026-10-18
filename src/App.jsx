@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Sidebar from './components/Sidebar/Sidebar';
 import ChatWindow from './components/ChatWindow/ChatWindow';
 import LoginForm from './components/LoginForm/LoginForm';
-import { getStateInstance, checkAccount, sendMessage } from './api/greenApi';
+import {
+  getStateInstance,
+  checkAccount,
+  sendMessage,
+  receiveNotification,
+  deleteNotification,
+} from './api/greenApi';
 import './App.scss';
 
 const STORAGE_KEY = 'green-chat-credentials';
+const RETRY_DELAY_MS = 5000;
 
 function loadCredentials() {
   try {
@@ -14,6 +21,47 @@ function loadCredentials() {
   } catch {
     return null;
   }
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseIncomingMessage(body) {
+  if (body?.typeWebhook !== 'incomingMessageReceived') {
+    return null;
+  }
+
+  const { messageData, senderData } = body;
+  let text = null;
+
+  if (messageData?.typeMessage === 'textMessage') {
+    text = messageData.textMessageData?.textMessage;
+  } else if (messageData?.typeMessage === 'extendedTextMessage') {
+    text = messageData.extendedTextMessageData?.text;
+  }
+
+  if (!text) {
+    return null;
+  }
+
+  const chatId = String(senderData.chatId);
+  const phone = senderData.senderPhoneNumber ? String(senderData.senderPhoneNumber) : '';
+
+  return {
+    chat: {
+      chatId,
+      phone,
+      title: phone ? `+${phone}` : senderData.chatName || chatId,
+    },
+    message: {
+      id: body.idMessage,
+      chatId,
+      text,
+      direction: 'in',
+      timestamp: body.timestamp * 1000,
+    },
+  };
 }
 
 function App() {
@@ -27,6 +75,54 @@ function App() {
 
   const [isCreatingChat, setIsCreatingChat] = useState(false);
   const [chatError, setChatError] = useState('');
+
+  useEffect(() => {
+    if (!credentials) {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+
+    async function poll() {
+      while (!controller.signal.aborted) {
+        try {
+          const notification = await receiveNotification(credentials, 20, controller.signal);
+
+          if (!notification) {
+            continue;
+          }
+
+          const incoming = parseIncomingMessage(notification.body);
+
+          if (incoming) {
+            setChats((prev) =>
+              prev.some((chat) => chat.chatId === incoming.chat.chatId)
+                ? prev
+                : [...prev, incoming.chat],
+            );
+
+            setMessages((prev) =>
+              prev.some((msg) => msg.id === incoming.message.id)
+                ? prev
+                : [...prev, incoming.message],
+            );
+          }
+
+          await deleteNotification(credentials, notification.receiptId);
+        } catch {
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          await delay(RETRY_DELAY_MS);
+        }
+      }
+    }
+
+    poll();
+
+    return () => controller.abort();
+  }, [credentials]);
 
   const activeChat = chats.find((chat) => chat.chatId === activeChatId);
   const activeMessages = messages.filter((msg) => msg.chatId === activeChatId);
@@ -86,7 +182,7 @@ function App() {
       }
 
       const chatId = String(result.chatId);
-      const newChat = { chatId, phone };
+      const newChat = { chatId, phone, title: `+${phone}` };
 
       setChats((prev) => {
         const alreadyExists = prev.some((chat) => chat.chatId === chatId);
