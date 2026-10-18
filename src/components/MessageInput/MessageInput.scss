@@ -38,6 +38,12 @@
     box-shadow: var(--shadow-bubble);
     transition: background-color 0.2s, transform 0.1s;
 
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+      transform: none;
+    }
+
     &:hover {
       background: var(--color-accent-hover);
     }

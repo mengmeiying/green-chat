@@ -2,7 +2,7 @@ import Message from '../Message/Message';
 import MessageInput from '../MessageInput/MessageInput';
 import './ChatWindow.scss';
 
-function ChatWindow({ chat, messages }) {
+function ChatWindow({ chat, messages, onSendMessage }) {
   if (!chat) {
     return (
       <section className="chat-window chat-window--empty">
@@ -21,12 +21,12 @@ function ChatWindow({ chat, messages }) {
             key={msg.id}
             text={msg.text}
             direction={msg.direction}
-            time={msg.time}
+            timestamp={msg.timestamp}
           />
         ))}
       </div>
 
-      <MessageInput />
+      <MessageInput onSend={onSendMessage} />
     </section>
   );
 }
