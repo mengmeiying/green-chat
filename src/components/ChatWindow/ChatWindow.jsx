@@ -1,8 +1,19 @@
+import { useEffect, useRef } from 'react';
 import Message from '../Message/Message';
 import MessageInput from '../MessageInput/MessageInput';
 import './ChatWindow.scss';
 
 function ChatWindow({ chat, messages, onSendMessage }) {
+  const messagesRef = useRef(null);
+
+  useEffect(() => {
+    const list = messagesRef.current;
+
+    if (list) {
+      list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
+    }
+  }, [messages]);
+
   if (!chat) {
     return (
       <section className="chat-window chat-window--empty">
@@ -15,7 +26,7 @@ function ChatWindow({ chat, messages, onSendMessage }) {
     <section className="chat-window">
       <header className="chat-window__header">+{chat.phone}</header>
 
-      <div className="chat-window__messages">
+      <div className="chat-window__messages" ref={messagesRef}>
         {messages.map((msg) => (
           <Message
             key={msg.id}
