@@ -1,30 +1,43 @@
 import { useState } from 'react';
 import './Sidebar.scss';
 
-function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat, onLogout }) {
+function Sidebar({
+  chats,
+  activeChatId,
+  onSelectChat,
+  onCreateChat,
+  onLogout,
+  isCreatingChat,
+  chatError,
+}) {
   const [phone, setPhone] = useState('');
 
-  function handleSubmit(event) {
+  const digits = phone.replace(/\D/g, '');
+  const isPhoneValid = digits.length >= 10;
+
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    const digits = phone.replace(/\D/g, '');
-
-    if (digits.length < 10) {
+    if (!isPhoneValid) {
       return;
     }
 
-    onCreateChat(digits);
-    setPhone('');
+    const isCreated = await onCreateChat(digits);
+
+    if (isCreated) {
+      setPhone('');
+    }
   }
 
   return (
     <aside className="sidebar">
-        <header className="sidebar__header">
+      <header className="sidebar__header">
         <h2 className="sidebar__title">Чаты</h2>
         <button className="sidebar__logout" type="button" onClick={onLogout}>
           Выйти
         </button>
       </header>
+
       <form className="sidebar__new-chat" onSubmit={handleSubmit}>
         <input
           className="sidebar__input"
@@ -33,9 +46,15 @@ function Sidebar({ chats, activeChatId, onSelectChat, onCreateChat, onLogout }) 
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
         />
-        <button className="sidebar__button" type="submit">
-          Новый чат
+        <button
+          className="sidebar__button"
+          type="submit"
+          disabled={!isPhoneValid || isCreatingChat}
+        >
+          {isCreatingChat ? 'Ищем…' : 'Новый чат'}
         </button>
+
+        {chatError && <p className="sidebar__error">{chatError}</p>}
       </form>
 
       {chats.length === 0 ? (

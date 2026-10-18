@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Sidebar from './components/Sidebar/Sidebar';
 import ChatWindow from './components/ChatWindow/ChatWindow';
 import LoginForm from './components/LoginForm/LoginForm';
-import { getStateInstance } from './api/greenApi';
+import { getStateInstance, checkAccount, sendMessage } from './api/greenApi';
 import './App.scss';
 
 const STORAGE_KEY = 'green-chat-credentials';
@@ -24,6 +24,9 @@ function App() {
   const [chats, setChats] = useState([]);
   const [messages, setMessages] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
+
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
+  const [chatError, setChatError] = useState('');
 
   const activeChat = chats.find((chat) => chat.chatId === activeChatId);
   const activeMessages = messages.filter((msg) => msg.chatId === activeChatId);
@@ -55,37 +58,77 @@ function App() {
     setChats([]);
     setMessages([]);
     setActiveChatId(null);
+    setChatError('');
   }
 
   function handleSelectChat(chatId) {
     setActiveChatId(chatId);
   }
 
-  function handleCreateChat(phone) {
+  async function handleCreateChat(phone) {
+    setChatError('');
+
     const existingChat = chats.find((chat) => chat.phone === phone);
 
     if (existingChat) {
       setActiveChatId(existingChat.chatId);
-      return;
+      return true;
     }
 
-    // Временно: chatId = номер. Потом настоящий chatId придёт из CheckAccount
-    const newChat = { chatId: phone, phone };
+    setIsCreatingChat(true);
 
-    setChats((prev) => [...prev, newChat]);
-    setActiveChatId(newChat.chatId);
+    try {
+      const result = await checkAccount(credentials, phone);
+
+      if (!result?.exist) {
+        setChatError('У этого номера нет Telegram, или он скрыт настройками приватности.');
+        return false;
+      }
+
+      const chatId = String(result.chatId);
+      const newChat = { chatId, phone };
+
+      setChats((prev) => {
+        const alreadyExists = prev.some((chat) => chat.chatId === chatId);
+        return alreadyExists ? prev : [...prev, newChat];
+      });
+      setActiveChatId(chatId);
+
+      return true;
+    } catch {
+      setChatError('Не удалось проверить номер. Попробуйте ещё раз.');
+      return false;
+    } finally {
+      setIsCreatingChat(false);
+    }
   }
 
-  function handleSendMessage(text) {
+  function updateMessageStatus(messageId, status) {
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === messageId ? { ...msg, status } : msg)),
+    );
+  }
+
+  async function handleSendMessage(text) {
+    const chatId = activeChatId;
+
     const newMessage = {
       id: crypto.randomUUID(),
-      chatId: activeChatId,
+      chatId,
       text,
       direction: 'out',
       timestamp: Date.now(),
+      status: 'sending',
     };
 
     setMessages((prev) => [...prev, newMessage]);
+
+    try {
+      await sendMessage(credentials, chatId, text);
+      updateMessageStatus(newMessage.id, 'sent');
+    } catch {
+      updateMessageStatus(newMessage.id, 'error');
+    }
   }
 
   if (!credentials) {
@@ -106,6 +149,8 @@ function App() {
         onSelectChat={handleSelectChat}
         onCreateChat={handleCreateChat}
         onLogout={handleLogout}
+        isCreatingChat={isCreatingChat}
+        chatError={chatError}
       />
       <ChatWindow
         chat={activeChat}

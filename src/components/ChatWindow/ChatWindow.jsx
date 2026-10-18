@@ -33,6 +33,7 @@ function ChatWindow({ chat, messages, onSendMessage }) {
             text={msg.text}
             direction={msg.direction}
             timestamp={msg.timestamp}
+            status={msg.status}
           />
         ))}
       </div>
