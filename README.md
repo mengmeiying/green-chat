@@ -6,7 +6,7 @@
 
 **Демо:** https://green-chat-xi.vercel.app/
 
-![Интерфейс чата](docs/screenshot-chat.png)
+![Интерфейс чата](docs/screenshot-chat.jpg)
 
 ## Почему Telegram, а не MAX
 
